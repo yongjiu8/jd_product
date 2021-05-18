@@ -1,0 +1,194 @@
+﻿<!doctype html>
+<html class="no-js" lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>JD—商品信息下载</title>
+    <meta name="robots" content="noindex, follow" />
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Favicon -->
+    <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.png">
+    <link rel="stylesheet" href="/css/helper.css">
+
+
+    <!--====== Use the minified version files listed below for better performance and remove the files listed above ======-->
+    <link rel="stylesheet" href="/css/plugins-min/plugins.min.css">
+    <link rel="stylesheet" href="/css/style.min.css">
+
+
+</head>
+
+<body>
+
+    <div class="main-wrapper">
+
+        <div class="overlay"></div>
+        <!--Overlay-->
+
+        <!--Page Banner Start-->
+        <div class="page-banner" style="background-image: url(/images/testimonial-bg.jpg);">
+            <div class="container">
+                <div class="page-banner-content text-center">
+                    <h2 class="title">JD商品图片下载工具</h2>
+                    <ol class="breadcrumb justify-content-center">
+                    </ol>
+                </div>
+            </div>
+        </div>
+        <!--Page Banner End-->
+
+        <!--Login Start-->
+        <div class="login-page section-padding-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-6">
+                        <div class="login-register-content">
+                            <h5 class="title">商品详情地址 如：https://item.jd.com/10026886898061.html</h5>
+
+                            <div class="login-register-form">
+                                <form action="#">
+                                    <div class="single-form">
+                                        <label>商品详情地址</label>
+                                        <input type="text" id="url">
+                                    </div>
+                                    <div class="single-form">
+                                        <label>保存路径如d:/(注意尽量不要设置C盘为下载目录 因为没操作权限)</label>
+                                        <input type="text" id="dir">
+                                        <button class="btn btn-primary" type="button" id="save">保存</button>
+                                    </div>
+                                    <div class="single-form">
+                                        <label>jd登录后Cookie(不设置也行，频繁访问商品详情页会强跳登陆页导致下载失败)</label>
+                                        <input type="text" id="cok">
+                                        <button class="btn btn-primary" type="button" id="cokSave">保存</button>
+                                    </div>
+                                    <div class="single-form">
+                                        <button class="btn btn-primary btn-block" type="button" id="download">下载</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Login End-->
+
+
+        <!--Footer Section Start-->
+        <div class="footer-area">
+            <div class="container">
+                <div class="footer-widget-area section-padding-6">
+                    <div class="row justify-content-between">
+                        <H1>ITZG</H1>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Footer Section End-->
+
+        <!--Copyright Section Start-->
+        <div class="copyright-section">
+            <div class="container">
+                <div class="copyright-wrapper text-center d-lg-flex align-items-center justify-content-between">
+
+                    <!--Right Start-->
+                    <div class="copyright-content">
+                        <p>Copyright &copy; 2021.Company ITZG All rights reserved.</p>
+                    </div>
+                    <!--Right End-->
+
+                </div>
+            </div>
+        </div>
+        <!--Copyright Section End-->
+
+
+        <!--Back To Start-->
+        <a href="#" class="back-to-top">
+            <i class="fa fa-angle-double-up"></i>
+        </a>
+        <!--Back To End-->
+
+        <div id="show" style="width:100%;height:100%;display: none;position: fixed;top: 0px;left: 0px;background-color: rgba(0,0,0,0.5)">
+            <p style="text-align: center;font-size: 50px;color: white;margin-top: 50px;">下载中....请耐心等待</p>
+            <div id="log" style="width: 100%;height: 80%;text-align: left;padding: 50px;color: white;font-size: 10px;overflow-y: scroll">
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <!-- Modernizer JS -->
+    <script src="/js/vendor/modernizr-3.6.0.min.js"></script>
+    <!-- jQuery JS -->
+    <script src="/js/vendor/jquery-3.3.1.min.js"></script>
+
+    <script src="/js/plugins.min.js"></script>
+    <!-- Main JS -->
+    <script src="/js/main.js"></script>
+
+    <!-- Google Map js -->
+    <script src="https://ditu.google.cn/maps/api/js?key=AIzaSyBQ5y0EF8dE6qwc03FcbXHJfXr4vEa7z54"></script>
+    <script src="/js/map-script.js"></script>
+<script>
+    $(function () {
+        function getDir() {
+            $.get("/jdProductGet/getDir",function (res) {
+                $("#dir").val(res);
+            })
+
+            $.get("/jdProductGet/getCookie",function (res) {
+                $("#cok").val(res);
+            })
+        }
+        getDir();
+
+        $("#save").click(function () {
+            $.get("/jdProductGet/setDir",{"dir":$("#dir").val()},function (res) {
+                getDir();
+                alert("保存成功！");
+            })
+        });
+
+        $("#cokSave").click(function () {
+            $.get("/jdProductGet/setCookie",{"cookie":$("#cok").val()},function (res) {
+                getDir();
+                alert("保存成功！");
+            })
+        });
+        
+        $("#download").click(function () {
+            var url = $("#url").val();
+            if (url != undefined && url != '' && url.length >10 && url.indexOf("http")>-1 && url.indexOf(".html") > -1) {
+                $("#show").show();
+                $("#log").html("<p>运行日志加载中....</p>");
+                //获取日志
+                var log = setInterval(function () {
+                    $.get("/jdProductGet/getLog",function (res) {
+                        $("#log").html(res);
+                        $("#log").scrollTop($("#log").get(0).scrollHeight);
+                    })
+                },1000);
+                $.get("/jdProductGet/get",{"url":url},function (res) {
+                    $("#show").hide();
+                    clearInterval(log);
+                    $("#log").html("");
+                    if (res == "filed"){
+                        alert("下载失败！系统异常（目前不支持京东国际）");
+                    }else {
+                        alert("下载完毕");
+                    }
+                })
+            }else {
+                alert("请确认下载地址是否正确！");
+            }
+        });
+
+    })
+</script>
+</body>
+
+</html>
